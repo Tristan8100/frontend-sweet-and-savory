@@ -58,6 +58,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    console.log(email, password);
     loginMutation.mutate({ email, password });
   };
 

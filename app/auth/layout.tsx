@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <GalleryVerticalEnd className="size-4" />
           </div>
-          Acme Inc.
+          <div className='font-bold'>SWEET and SAVORY</div>
         </a>
         {children}
       </div>
