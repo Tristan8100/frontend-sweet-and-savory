@@ -47,10 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
   return (
     <div className="flex h-full min-h-screen flex-col">
-      <header className="flex h-16 shrink-0 items-center justify-center bg-primary text-primary-foreground">
-        <h1 className="text-2xl font-bold">User Dashboard</h1>
-      </header>
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      {children}
     </div>
   );
 }
