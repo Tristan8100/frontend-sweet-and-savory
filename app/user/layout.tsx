@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import UserDashboardHeader from "@/components/user/user-hero";
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -47,6 +48,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   }
   return (
     <>
+      <UserDashboardHeader />
       {children}
     </>
   );

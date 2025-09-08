@@ -1,116 +1,133 @@
-'use client';
+'use client'
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
-    
+import { useEffect, useState } from 'react';
+import { api, api2 } from '@/lib/api'; // adjust import path to where you placed axios instances
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChefHat, Users, Clock, Star } from "lucide-react"
-import HeroSection from "@/components/sections/hero"
 import UserHeroSection from '@/components/user/user-hero';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const packages = [
-    {
-      id: 1,
-      name: "Pasta Paradise Package",
-      description: "Authentic Italian pasta dishes perfect for any gathering",
-      image: "/images/sv2.jpg",
-      options: [
-        {
-          name: "Classic Combo",
-          price: 1000,
-          description: "Spaghetti Marinara, Fettuccine Alfredo, Caesar Salad, Garlic Bread",
-        },
-        {
-          name: "Premium Selection",
-          price: 1500,
-          description: "Lasagna, Penne Arrabbiata, Chicken Parmigiana, Mixed Greens, Tiramisu",
-        },
-        {
-          name: "Family Feast",
-          price: 2200,
-          description: "All classic items plus Ravioli, Carbonara, Antipasto Platter, Italian Desserts",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Sweet Endings Package",
-      description: "Decadent desserts to make your event unforgettable",
-      image: "/images/sv1.jpg",
-      options: [
-        {
-          name: "Mini Delights",
-          price: 800,
-          description: "Assorted mini cupcakes, chocolate truffles, fruit tarts",
-        },
-        {
-          name: "Celebration Special",
-          price: 1200,
-          description: "Custom cake, cheesecake slices, macarons, chocolate fountain",
-        },
-        {
-          name: "Ultimate Sweet Table",
-          price: 1800,
-          description: "Everything in Celebration Special plus cookies, brownies, ice cream bar",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Filipino Fiesta Package",
-      description: "Traditional Filipino dishes that bring comfort and joy",
-      image: "/images/sv1.jpg",
-      options: [
-        {
-          name: "Home Style",
-          price: 1100,
-          description: "Adobo, Pancit, Fried Rice, Lumpia, Fresh Fruits",
-        },
-        {
-          name: "Festival Feast",
-          price: 1600,
-          description: "Lechon Kawali, Kare-Kare, Sisig, Pancit Canton, Halo-Halo",
-        },
-        {
-          name: "Grand Celebration",
-          price: 2500,
-          description: "Complete festival spread plus Crispy Pata, Seafood, Traditional Desserts",
-        },
-      ],
-    },
-    {
-      id: 4,
-      name: "International Fusion Package",
-      description: "A worldly selection of international favorites",
-      image: "/images/sv2.jpg",
-      options: [
-        {
-          name: "Global Tastes",
-          price: 1300,
-          description: "Chicken Teriyaki, Beef Tacos, Pad Thai, Mediterranean Salad",
-        },
-        {
-          name: "World Tour",
-          price: 1900,
-          description: "Korean BBQ, Indian Curry, Mexican Fajitas, Greek Gyros, Asian Stir-fry",
-        },
-        {
-          name: "Continental Deluxe",
-          price: 2800,
-          description: "Premium international selection with appetizers, mains, and desserts from 6 cuisines",
-        },
-      ],
-    },
-  ]
+  const [packages, setPackages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await api2.get('/api/admin-packages');
+        if (res.data.success) {
+          setPackages(res.data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching packages:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPackages();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-muted-foreground">Loading packages...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      
-      <UserHeroSection />
+
+      <main>
+        <div
+          aria-hidden
+          className="z-2 absolute inset-0 isolate hidden opacity-50 contain-strict lg:block"
+        >
+          <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
+          <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
+          <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
+        </div>
+
+        <section className="overflow-hidden bg-white dark:bg-transparent">
+          <div className="relative mx-auto max-w-5xl px-6 py-28 lg:py-24">
+            <div className="relative z-10 mx-auto max-w-2xl text-center">
+              <h1 className="text-balance text-4xl font-semibold md:text-5xl lg:text-6xl">
+                Welcome back, {user?.name || 'User'}!
+              </h1>
+              <p className="mx-auto my-8 max-w-2xl text-xl">
+                Ready to plan your next celebration? Browse our latest offerings or check your upcoming orders.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild size="lg">
+                  <Link href="/order">
+                    <span className="btn-label">Place New Order</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/reservations">
+                    <span className="btn-label">View Reservations</span>
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-auto -mt-16 max-w-7xl">
+            <div className="perspective-distant -mr-16 pl-16 lg:-mr-56 lg:pl-56">
+              <div className="[transform:rotateX(20deg);]">
+                <div className="lg:h-176 relative skew-x-[.36rad]">
+                  <div
+                    aria-hidden
+                    className="bg-linear-to-b from-background to-background z-1 absolute -inset-16 via-transparent sm:-inset-32"
+                  />
+                  <div
+                    aria-hidden
+                    className="bg-linear-to-r from-background to-background z-1 absolute -inset-16 bg-white/50 via-transparent sm:-inset-32 dark:bg-transparent"
+                  />
+
+                  <div
+                    aria-hidden
+                    className="absolute -inset-16 bg-[linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] bg-[size:24px_24px] [--color-border:var(--color-zinc-400)] sm:-inset-32 dark:[--color-border:color-mix(in_oklab,var(--color-white)_20%,transparent)]"
+                  />
+                  <div
+                    aria-hidden
+                    className="from-background z-11 absolute inset-0 bg-gradient-to-l"
+                  />
+                  <div
+                    aria-hidden
+                    className="z-2 absolute inset-0 size-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,transparent_40%,var(--color-background)_100%)]"
+                  />
+                  <div
+                    aria-hidden
+                    className="z-2 absolute inset-0 size-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,transparent_40%,var(--color-background)_100%)]"
+                  />
+
+                  <Image
+                    className="rounded-(--radius) z-1 relative border dark:hidden"
+                    src="/images/sv1.jpg"
+                    alt="Sweet and Savory party tray"
+                    width={2880}
+                    height={2074}
+                  />
+                  <Image
+                    className="rounded-(--radius) z-1 relative hidden border dark:block"
+                    src="/images/sv1.jpg"
+                    alt="Sweet and Savory party tray"
+                    width={2880}
+                    height={2074}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
       {/* Packages Section */}
       <section id="packages" className="py-20">
@@ -128,7 +145,7 @@ export default function DashboardPage() {
               <Card key={pkg.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={pkg.image || "/placeholder.svg"}
+                    src={`${api2.defaults.baseURL}${pkg.picture_url}`}
                     alt={pkg.name}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
@@ -139,12 +156,12 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="max-h-64 overflow-y-auto space-y-4 pr-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-                    {pkg.options.map((option, index) => (
+                    {pkg.options?.map((option: any, index: number) => (
                       <div key={index} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-semibold text-foreground">{option.name}</h4>
                           <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">
-                            ₱{option.price.toLocaleString()}
+                            ₱{Number(option.price).toLocaleString()}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">{option.description}</p>
@@ -153,8 +170,10 @@ export default function DashboardPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full" size="lg">
+                  <Button asChild className="w-full" size="lg">
+                    <Link href={`/user/package/${pkg.id}`}>
                     Order Now
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
