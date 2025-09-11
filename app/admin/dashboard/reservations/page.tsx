@@ -6,7 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Filter, Eye, MoreHorizontal } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,6 +26,7 @@ interface Reservation {
   status: string;
   date: string;
   amount: number;
+  indicator?: "soon" | "late" | null;
   review_text?: string;
   rating?: number;
 }
@@ -48,13 +54,22 @@ export default function ReservationsPage() {
         const res = await api2.get("/api/reservations-status", { params: { search: debouncedSearch } });
         if (res.data.success) {
           const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
           const mapped = res.data.data.map((r: any) => {
             const reservationDate = new Date(r.date || r.created_at);
-            let status = r.status;
+            reservationDate.setHours(0, 0, 0, 0);
 
-            // Mark as "soon" if date has passed but still pending/confirmed
-            if ((status === "pending" || status === "confirmed") && reservationDate < today) {
-              status = "soon";
+            let indicator: "soon" | "late" | null = null;
+            if (r.status === "pending" || r.status === "confirmed") {
+              const diffInDays = Math.ceil(
+                (reservationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              if (diffInDays === 1) {
+                indicator = "soon";
+              } else if (diffInDays < 0) {
+                indicator = "late";
+              }
             }
 
             return {
@@ -63,7 +78,8 @@ export default function ReservationsPage() {
               package: r.package || r.packageOption?.package?.name || "N/A",
               package_option: r.package_option || r.packageOption?.name || "N/A",
               package_option_id: r.package_option?.id || 0,
-              status,
+              status: r.status,
+              indicator,
               date: reservationDate.toLocaleDateString(),
               amount: r.amount || r.price_purchased || 0,
               review_text: r.review_text,
@@ -88,7 +104,6 @@ export default function ReservationsPage() {
       case "pending": return "bg-secondary text-secondary-foreground";
       case "completed": return "bg-primary text-primary-foreground";
       case "cancelled": return "bg-destructive text-destructive-foreground";
-      case "soon": return "bg-yellow-500 text-black";
       default: return "bg-muted text-muted-foreground";
     }
   };
@@ -98,6 +113,23 @@ export default function ReservationsPage() {
       const res = await api2.get(`/api/reservations/${id}`);
       if (res.data.success) {
         const r = res.data.data;
+        const reservationDate = new Date(r.reservation_datetime || r.created_at);
+        reservationDate.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let indicator: "soon" | "late" | null = null;
+        if (r.status === "pending" || r.status === "confirmed") {
+          const diffInDays = Math.ceil(
+            (reservationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          if (diffInDays === 1) {
+            indicator = "soon";
+          } else if (diffInDays < 0) {
+            indicator = "late";
+          }
+        }
+
         setSelectedReservation({
           id: r.id,
           user: r.user?.name || "Unknown",
@@ -105,7 +137,8 @@ export default function ReservationsPage() {
           package_option: r.package_option?.name || "N/A",
           package_option_id: r.package_option?.id || 0,
           status: r.status,
-          date: new Date(r.reservation_datetime || r.created_at).toLocaleDateString(),
+          indicator,
+          date: reservationDate.toLocaleDateString(),
           amount: r.price_purchased || 0,
           review_text: r.review_text,
           rating: r.rating,
@@ -160,7 +193,6 @@ export default function ReservationsPage() {
             <SelectItem value="confirmed">Confirmed</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
-            <SelectItem value="soon">Soon</SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
@@ -191,7 +223,15 @@ export default function ReservationsPage() {
                       <td className="p-4">{r.package}</td>
                       <td className="p-4">{r.package_option}</td>
                       <td className="p-4">{r.date}</td>
-                      <td className="p-4"><Badge className={getStatusColor(r.status)}>{r.status}</Badge></td>
+                      <td className="p-4 flex items-center gap-2">
+                        <Badge className={getStatusColor(r.status)}>{r.status}</Badge>
+                        {r.indicator === "soon" && (
+                          <Badge className="bg-yellow-500 text-black">Soon</Badge>
+                        )}
+                        {r.indicator === "late" && (
+                          <Badge className="bg-red-500 text-white">Late</Badge>
+                        )}
+                      </td>
                       <td className="p-4">${r.amount}</td>
                       <td className="p-4">
                         <DropdownMenu>
@@ -230,7 +270,17 @@ export default function ReservationsPage() {
               <p><strong>Package:</strong> {selectedReservation.package}</p>
               <p><strong>Option:</strong> {selectedReservation.package_option}</p>
               <p><strong>Date:</strong> {selectedReservation.date}</p>
-              <p><strong>Status:</strong> <Badge className={getStatusColor(selectedReservation.status)}>{selectedReservation.status}</Badge></p>
+              <p><strong>Status:</strong> 
+                <span className="flex items-center gap-2 mt-1">
+                  <Badge className={getStatusColor(selectedReservation.status)}>{selectedReservation.status}</Badge>
+                  {selectedReservation.indicator === "soon" && (
+                    <Badge className="bg-yellow-500 text-black">Soon</Badge>
+                  )}
+                  {selectedReservation.indicator === "late" && (
+                    <Badge className="bg-red-500 text-white">Late</Badge>
+                  )}
+                </span>
+              </p>
               <p><strong>Amount:</strong> ${selectedReservation.amount}</p>
               {selectedReservation.status === 'completed' && selectedReservation.rating && (
                 <p><strong>Rating:</strong> {selectedReservation.rating} / 5</p>
