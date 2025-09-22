@@ -1,104 +1,17 @@
+'use client'
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ChefHat, Users, Clock, Star } from "lucide-react"
 import HeroSection from "@/components/sections/hero"
+import { useState, useEffect } from 'react';
+import { api2 } from "@/lib/api";
+import Link from "next/link";
+import Packages from "@/components/user/packages"
+import Image from "next/image"
 
 export default function CateringLandingPage() {
-  const packages = [
-    {
-      id: 1,
-      name: "Pasta Paradise Package",
-      description: "Authentic Italian pasta dishes perfect for any gathering",
-      image: "/images/sv2.jpg",
-      options: [
-        {
-          name: "Classic Combo",
-          price: 1000,
-          description: "Spaghetti Marinara, Fettuccine Alfredo, Caesar Salad, Garlic Bread",
-        },
-        {
-          name: "Premium Selection",
-          price: 1500,
-          description: "Lasagna, Penne Arrabbiata, Chicken Parmigiana, Mixed Greens, Tiramisu",
-        },
-        {
-          name: "Family Feast",
-          price: 2200,
-          description: "All classic items plus Ravioli, Carbonara, Antipasto Platter, Italian Desserts",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Sweet Endings Package",
-      description: "Decadent desserts to make your event unforgettable",
-      image: "/images/sv1.jpg",
-      options: [
-        {
-          name: "Mini Delights",
-          price: 800,
-          description: "Assorted mini cupcakes, chocolate truffles, fruit tarts",
-        },
-        {
-          name: "Celebration Special",
-          price: 1200,
-          description: "Custom cake, cheesecake slices, macarons, chocolate fountain",
-        },
-        {
-          name: "Ultimate Sweet Table",
-          price: 1800,
-          description: "Everything in Celebration Special plus cookies, brownies, ice cream bar",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Filipino Fiesta Package",
-      description: "Traditional Filipino dishes that bring comfort and joy",
-      image: "/images/sv1.jpg",
-      options: [
-        {
-          name: "Home Style",
-          price: 1100,
-          description: "Adobo, Pancit, Fried Rice, Lumpia, Fresh Fruits",
-        },
-        {
-          name: "Festival Feast",
-          price: 1600,
-          description: "Lechon Kawali, Kare-Kare, Sisig, Pancit Canton, Halo-Halo",
-        },
-        {
-          name: "Grand Celebration",
-          price: 2500,
-          description: "Complete festival spread plus Crispy Pata, Seafood, Traditional Desserts",
-        },
-      ],
-    },
-    {
-      id: 4,
-      name: "International Fusion Package",
-      description: "A worldly selection of international favorites",
-      image: "/images/sv2.jpg",
-      options: [
-        {
-          name: "Global Tastes",
-          price: 1300,
-          description: "Chicken Teriyaki, Beef Tacos, Pad Thai, Mediterranean Salad",
-        },
-        {
-          name: "World Tour",
-          price: 1900,
-          description: "Korean BBQ, Indian Curry, Mexican Fajitas, Greek Gyros, Asian Stir-fry",
-        },
-        {
-          name: "Continental Deluxe",
-          price: 2800,
-          description: "Premium international selection with appetizers, mains, and desserts from 6 cuisines",
-        },
-      ],
-    },
-  ]
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,56 +41,33 @@ export default function CateringLandingPage() {
         </div>
       </section>
 
-      {/* Packages Section */}
-      <section id="packages" className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Our Catering Packages</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Choose from our carefully curated packages, each designed to deliver exceptional taste and memorable
-              experiences.
-            </p>
-          </div>
+      <Packages />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {packages.map((pkg) => (
-              <Card key={pkg.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-video overflow-hidden">
-                  <img
-                    src={pkg.image || "/placeholder.svg"}
-                    alt={pkg.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                  <CardDescription className="text-base">{pkg.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="max-h-64 overflow-y-auto space-y-4 pr-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-                    {pkg.options.map((option, index) => (
-                      <div key={index} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-foreground">{option.name}</h4>
-                          <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">
-                            ₱{option.price.toLocaleString()}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{option.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" size="lg">
-                    Order Now
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      <section className="py-20 bg-background">
+  <div className="container mx-auto px-4 text-center md:text-left">
+    <h2 className="text-3xl md:text-4xl font-bold mb-6">About Us</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div>
+        <p className="text-lg text-muted-foreground mb-4">
+          At Sweet and Savory, we are passionate about creating unforgettable experiences through exquisite food and exceptional service. 
+          With years of experience in catering for events of all sizes, we ensure every detail is taken care of, so you can enjoy your special occasion stress-free.
+        </p>
+        <p className="text-lg text-muted-foreground">
+          Our team of professional chefs and event specialists work closely with you to tailor menus and services to match your vision, ensuring that every event is not just catered, but celebrated.
+        </p>
+      </div>
+      <div>
+        <Image
+          src="/images/sv2.jpg"
+          alt="About Delicious Catering"
+          width={400}      // Set desired width
+          height={400}     // Set same height to make it square
+          className="rounded-lg object-cover shadow-lg"
+        />
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* CTA Section */}
       <section className="py-20 bg-primary text-primary-foreground">

@@ -26,7 +26,7 @@ import { useAuth } from '@/contexts/AuthContext'
 
 const menuItems = [
   { name: 'Reservations', href: '/user/reservations' },
-  { name: 'Account', href: '#' },
+  { name: 'Account', href: '/user/settings' },
 ]
 
 export default function UserDashboardHeader() {
@@ -99,21 +99,12 @@ export default function UserDashboardHeader() {
                         </div>
                         
                         <Link
-                          href="/profile"
+                          href="/user/profile"
                           className="flex items-center gap-2 text-lg py-2 px-4 rounded-md hover:bg-accent"
                           onClick={() => setMenuOpen(false)}
                         >
                           <User className="h-5 w-5" />
                           Profile
-                        </Link>
-                        
-                        <Link
-                          href="/settings"
-                          className="flex items-center gap-2 text-lg py-2 px-4 rounded-md hover:bg-accent"
-                          onClick={() => setMenuOpen(false)}
-                        >
-                          <Settings className="h-5 w-5" />
-                          Settings
                         </Link>
                         
                         <button
@@ -166,15 +157,9 @@ export default function UserDashboardHeader() {
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href="/profile" className="cursor-pointer">
+                        <Link href="/user/settings" className="cursor-pointer">
                           <User className="mr-2 h-4 w-4" />
                           Profile
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/settings" className="cursor-pointer">
-                          <Settings className="mr-2 h-4 w-4" />
-                          Settings
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

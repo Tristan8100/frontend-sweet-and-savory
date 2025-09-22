@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const token = localStorage.getItem("token");
     
     if (!token) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
 

@@ -31,7 +31,23 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       console.log("Admin login successful");
     } catch (err: any) {
       console.error("Admin login failed", err);
-      if (err.response?.data?.message) {
+
+      // Check if 401, then trigger send-otp
+      if (err.response?.status === 401) {
+        try {
+          const otpRes = await api.post("/api/send-otp", { email: credentials.email });
+          console.log("OTP sent:", otpRes.data);
+
+          // Save email in localStorage
+          localStorage.setItem("email", credentials.email);
+
+          // Redirect to verify OTP page
+          router.push("/auth/verify-otp");
+        } catch (otpErr: any) {
+          console.error("Failed to send OTP", otpErr);
+          setError("Failed to send OTP. Please try again later.");
+        }
+      } else if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
         setError("An unexpected error occurred.");

@@ -65,12 +65,12 @@ export default function DashboardPage() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg">
-                  <Link href="/order">
+                  <Link href="/user/dashboard/#packages">
                     <span className="btn-label">Place New Order</span>
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <Link href="/reservations">
+                  <Link href="/user/reservations">
                     <span className="btn-label">View Reservations</span>
                   </Link>
                 </Button>
