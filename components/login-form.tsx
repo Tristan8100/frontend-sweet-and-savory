@@ -25,6 +25,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
   const attemptAdminLogin = async (credentials: { email: string; password: string }) => {
     try {
+      console.log("Attempting admin login...");
       const res = await api.post("/api/admin-login", credentials);
       login(res.data.admin_info, res.data.token);
       router.push("/admin/dashboard");
@@ -34,20 +35,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
       // Check if 401, then trigger send-otp
       if (err.response?.status === 401) {
-        try {
-          const otpRes = await api.post("/api/send-otp", { email: credentials.email });
-          console.log("OTP sent:", otpRes.data);
-
-          // Save email in localStorage
-          localStorage.setItem("email", credentials.email);
-
-          // Redirect to verify OTP page
-          router.push("/auth/verify-otp");
-        } catch (otpErr: any) {
-          console.error("Failed to send OTP", otpErr);
-          setError("Failed to send OTP. Please try again later.");
-        }
-      } else if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
         setError("An unexpected error occurred.");
@@ -66,8 +53,27 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
     },
     onError: (err: any) => {
-      console.warn("User login failed, attempting admin login...");
-      attemptAdminLogin({ email, password });
+      const status = err.response?.status;
+      const message = err.response?.data?.message;
+
+      if (status === 401) {
+        console.warn("User login failed, attempting admin login...");
+        attemptAdminLogin({ email, password });
+      } else if (status === 403) {
+        // Send OTP
+        api.post("/api/send-otp", { email })
+          .then((otpRes) => {
+            console.log("OTP sent:", otpRes.data);
+            localStorage.setItem("email", email);
+            router.push("/auth/verify-otp");
+          })
+          .catch((otpErr) => {
+            console.error("Failed to send OTP", otpErr);
+            setError("Failed to send OTP. Please try again later.");
+          });
+      } else {
+        setError(message || "An unexpected error occurred.");
+      }
     },
   });
 

@@ -291,9 +291,18 @@ export default function ReservationsPage() {
                 </Link>
               </Button>
               <div className="mt-4">
-                <Select value={selectedReservation.status} onValueChange={handleStatusUpdate}>
+                <Select
+                  value={selectedReservation.status}
+                  onValueChange={handleStatusUpdate}
+                  disabled={statusUpdating}   // disable now
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Change status" />
+                    {statusUpdating && (
+                      <span className="ml-2 text-sm text-muted-foreground animate-pulse">
+                        Updating...
+                      </span>
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
