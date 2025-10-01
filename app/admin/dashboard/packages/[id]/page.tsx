@@ -175,7 +175,7 @@ export default function PackageDetails() {
     if (formData.picture) data.append('picture', formData.picture);
 
     try {
-      const res = await api2.post(`/package-options-update/${selectedOption.id}`, data, {
+      const res = await api2.post(`/api/package-options-update/${selectedOption.id}`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       if (res.data.success) {
