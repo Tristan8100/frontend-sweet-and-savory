@@ -87,7 +87,7 @@ export default function PackageOptionPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl pt-16 sm:pt-12 px-4 border border-red-500">
+    <div className="container mx-auto max-w-5xl pt-16 sm:pt-12 px-4">
       <div className="pt-6 mb-10 flex flex-col items-center">
       <h1 className="text-4xl font-bold text-center mb-6">{option.name}</h1>
       <p className="text-lg text-muted-foreground text-center mb-10">{option.description}</p>
