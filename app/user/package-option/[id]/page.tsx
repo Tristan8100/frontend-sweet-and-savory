@@ -87,10 +87,12 @@ export default function PackageOptionPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-10">
-      <ReservationDialog packageOptionId={option.id} />
+    <div className="container mx-auto max-w-5xl pt-16 sm:pt-12 px-4 border border-red-500">
+      <div className="pt-6 mb-10 flex flex-col items-center">
       <h1 className="text-4xl font-bold text-center mb-6">{option.name}</h1>
       <p className="text-lg text-muted-foreground text-center mb-10">{option.description}</p>
+      <ReservationDialog packageOptionId={option.id} />
+      </div>
       
       {/* --- Package Details & Image --- */}
       <Card className="mb-10 overflow-hidden">
@@ -99,7 +101,7 @@ export default function PackageOptionPage() {
             <div>
               <CardTitle className="mb-4">Package Overview</CardTitle>
               <p className="text-3xl font-bold text-primary mb-4">
-                ${option.price}
+                ₱{option.price}
               </p>
               <p className="text-sm text-muted-foreground">
                 <strong>Package ID:</strong> {option.package_id}

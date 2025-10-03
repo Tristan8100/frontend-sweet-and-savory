@@ -59,7 +59,7 @@ export default function PackagePage() {
 
   return (
     <div className="min-h-screen bg-background py-16">
-      <div className="container mx-auto px-6 lg:px-12 max-w-6xl grid lg:grid-cols-2 gap-12 items-start">
+      <div className="container mx-auto px-6 lg:px-12 max-w-6xl pt-12 md:pt-0 grid lg:grid-cols-2 gap-12 items-start">
         {/* Left: Image */}
         <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
           {pkg.picture_url && (
