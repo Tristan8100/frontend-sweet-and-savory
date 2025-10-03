@@ -232,7 +232,7 @@ export default function ReservationsPage() {
                           <Badge className="bg-red-500 text-white">Late</Badge>
                         )}
                       </td>
-                      <td className="p-4">${r.amount}</td>
+                      <td className="p-4">₱{r.amount}</td>
                       <td className="p-4">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -281,7 +281,7 @@ export default function ReservationsPage() {
                   )}
                 </span>
               </p>
-              <p><strong>Amount:</strong> ${selectedReservation.amount}</p>
+              <p><strong>Amount:</strong> ₱{selectedReservation.amount}</p>
               {selectedReservation.status === 'completed' && selectedReservation.rating && (
                 <p><strong>Rating:</strong> {selectedReservation.rating} / 5</p>
               )}

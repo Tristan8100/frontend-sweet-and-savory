@@ -104,7 +104,8 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="container mx-auto p-6 max-w-2xl">
+    <div className="container mx-auto px-4 sm:px-6 pt-[72px] md:pt-[20px] max-w-2xl">
+
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>

@@ -124,21 +124,25 @@ export default function ReservationsPage() {
   };
 
   return (
-    <div className="min-h-screen p-10 bg-background">
-      <h1 className="text-3xl font-bold mb-6">My Reservations</h1>
+    <div className="min-h-screen px-4 sm:px-10 pt-20 md:pt-10 bg-background">
+  <h1 className="text-2xl sm:text-3xl font-bold mb-6">My Reservations</h1>
       <Tabs
         defaultValue="all"
         value={activeStatus}
         onValueChange={setActiveStatus}
         className="w-full"
       >
-        <TabsList>
-          {statuses.map((status) => (
-            <TabsTrigger key={status} value={status}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <TabsList className="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-4 overflow-x-auto no-scrollbar">
+        {statuses.map((status) => (
+          <TabsTrigger
+            key={status}
+            value={status}
+            className="text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
 
         {statuses.map((status) => (
           <TabsContent key={status} value={status} className="mt-6">

@@ -15,6 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { Loader2 } from "lucide-react";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const { login } = useAuth();
@@ -33,7 +34,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     } catch (err: any) {
       console.error("Admin login failed", err);
 
-      // Check if 401, then trigger send-otp
       if (err.response?.status === 401) {
         setError(err.response.data.message);
       } else {
@@ -60,7 +60,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         console.warn("User login failed, attempting admin login...");
         attemptAdminLogin({ email, password });
       } else if (status === 403) {
-        // Send OTP
         api.post("/api/send-otp", { email })
           .then((otpRes) => {
             console.log("OTP sent:", otpRes.data);
@@ -80,7 +79,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    console.log(email, password);
     loginMutation.mutate({ email, password });
   };
 
@@ -102,6 +100,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loginMutation.isPending}
               />
             </div>
             <div className="grid gap-3">
@@ -112,15 +111,26 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loginMutation.isPending}
               />
             </div>
-            <Button type="submit" className="w-full">
-              Login
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
-            {error && <div className="text-red-500 text-center text-sm mt-2">{error}</div>}
+            {error && (
+              <div className="text-red-500 text-center text-sm mt-2">{error}</div>
+            )}
           </form>
         </CardContent>
       </Card>
     </div>
   );
 }
+

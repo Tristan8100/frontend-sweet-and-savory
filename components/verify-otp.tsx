@@ -130,7 +130,7 @@ export function VerifyOtpForm({
             <div className="grid gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="otp">Verification Code</Label>
-                <div className="flex justify-center gap-2">
+                <div className="grid grid-cols-6 gap-2">
                   {[0, 1, 2, 3, 4, 5].map((index) => (
                     <Input
                       key={index}
@@ -142,7 +142,7 @@ export function VerifyOtpForm({
                       value={otp[index]}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onPaste={handlePaste}
-                      className="w-12 h-12 text-center text-xl"
+                      className="h-12 text-center text-lg sm:text-xl w-full"
                       autoFocus={index === 0}
                     />
                   ))}

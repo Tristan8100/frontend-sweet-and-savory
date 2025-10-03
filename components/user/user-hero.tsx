@@ -98,15 +98,6 @@ export default function UserDashboardHeader() {
                           </div>
                         </div>
                         
-                        <Link
-                          href="/user/profile"
-                          className="flex items-center gap-2 text-lg py-2 px-4 rounded-md hover:bg-accent"
-                          onClick={() => setMenuOpen(false)}
-                        >
-                          <User className="h-5 w-5" />
-                          Profile
-                        </Link>
-                        
                         <button
                           className="flex items-center gap-2 text-lg py-2 px-4 rounded-md text-red-600 hover:bg-accent w-full text-left"
                           onClick={() => {
