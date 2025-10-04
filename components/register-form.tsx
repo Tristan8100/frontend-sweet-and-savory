@@ -17,6 +17,7 @@ import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { Eye, EyeOff } from "lucide-react";
 
 export function RegisterForm({
   className,
@@ -27,6 +28,8 @@ export function RegisterForm({
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const registerMutation = useMutation({
     mutationFn: (credentials: { email: string; password: string; name: string }) => 
@@ -89,15 +92,24 @@ export function RegisterForm({
                     required
                   />
                 </div>
-                <div className="grid gap-3">
+                <div className="grid gap-3 relative">
                   <Label htmlFor="password">Password</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    value={password} 
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} 
-                    required 
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"} // <--- toggle type new
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-7 p-0 h-8 w-8"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
                 </div>
                 <Button 
                   type="submit" 

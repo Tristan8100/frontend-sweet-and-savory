@@ -77,18 +77,18 @@ export default function PackageDetails() {
     picture: null as File | null,
   });
 
-  const fetchPackage = async () => {
-    try {
-      const res = await api2.get(`/api/admin-packages/${params.id}`);
-      if (res.data.success) setPkg(res.data.data);
-    } catch (err) {
-      console.error('Error fetching package:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchPackage = async () => {
+      try {
+        const res = await api2.get(`/api/admin-packages/${params.id}`);
+        if (res.data.success) setPkg(res.data.data);
+      } catch (err) {
+        console.error('Error fetching package:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPackage();
   }, [params.id]);
 
@@ -100,7 +100,7 @@ export default function PackageDetails() {
       const res = await api2.get(`/api/admin-packages-AI/${params.id}`);
       if (res.data.success) {
         toast.success('AI analysis generated successfully!');
-        fetchPackage();
+        setPkg((prev) => ({ ...prev, ...res.data.data }));
       }
     } catch (err: any) {
       console.error(err);
@@ -110,7 +110,7 @@ export default function PackageDetails() {
     }
   };
 
-  // --- Open dialogs ---
+  // --- Dialog Handlers ---
   const openEditDialog = (option: PackageOption) => {
     setSelectedOption(option);
     setFormData({
@@ -132,12 +132,13 @@ export default function PackageDetails() {
     setDeleteDialogOpen(true);
   };
 
-  // --- Create ---
+  // --- Create Package Option ---
   const handleCreate = async () => {
     if (!formData.name || !formData.description || !formData.price || !formData.picture) {
       toast.error('All fields are required.');
       return;
     }
+
     const data = new FormData();
     data.append('package_id', params.id as string);
     data.append('name', formData.name);
@@ -152,7 +153,7 @@ export default function PackageDetails() {
       if (res.data.success) {
         toast.success('Package option created!');
         setCreateDialogOpen(false);
-        fetchPackage();
+        setPkg((prev) => prev ? { ...prev, options: [...prev.options, res.data.data] } : prev);
       }
     } catch (err: any) {
       console.error(err);
@@ -160,7 +161,7 @@ export default function PackageDetails() {
     }
   };
 
-  // --- Update ---
+  // --- Update Package Option ---
   const handleUpdate = async () => {
     if (!selectedOption) return;
     if (!formData.name || !formData.description || !formData.price) {
@@ -181,7 +182,13 @@ export default function PackageDetails() {
       if (res.data.success) {
         toast.success('Package option updated!');
         setEditDialogOpen(false);
-        fetchPackage();
+        setPkg((prev) => {
+          if (!prev) return prev;
+          const updatedOptions = prev.options.map((opt) =>
+            opt.id === selectedOption.id ? { ...opt, ...res.data.data } : opt
+          );
+          return { ...prev, options: updatedOptions };
+        });
       }
     } catch (err: any) {
       console.error(err);
@@ -189,7 +196,7 @@ export default function PackageDetails() {
     }
   };
 
-  // --- Delete ---
+  // --- Delete Package Option ---
   const handleDelete = async () => {
     if (!selectedOption) return;
     try {
@@ -197,7 +204,10 @@ export default function PackageDetails() {
       if (res.data.success) {
         toast.success('Package option deleted!');
         setDeleteDialogOpen(false);
-        fetchPackage();
+        setPkg((prev) => {
+          if (!prev) return prev;
+          return { ...prev, options: prev.options.filter((opt) => opt.id !== selectedOption.id) };
+        });
       }
     } catch (err: any) {
       console.error(err);
@@ -209,9 +219,9 @@ export default function PackageDetails() {
   if (!pkg) return <p className="text-center mt-20 text-red-500">Package not found.</p>;
 
   return (
-    <div className="min-h-screen p-8 space-y-10">
-      {/* Package Header */}
-      <div className="flex flex-col md:flex-row gap-6">
+    <div className="min-h-screen p-4 md:p-8 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         {pkg.picture_url && (
           <div className="w-full md:w-1/3 rounded-lg overflow-hidden shadow-lg">
             <Image
@@ -219,27 +229,29 @@ export default function PackageDetails() {
               alt={pkg.name}
               width={500}
               height={300}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded"
             />
           </div>
         )}
         <div className="flex-1 space-y-2">
-          <h1 className="text-4xl font-bold">{pkg.name}</h1>
-          <p className="text-muted-foreground">{pkg.description}</p>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{pkg.name}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">{pkg.description}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             <strong>Created:</strong> {new Date(pkg.created_at).toLocaleDateString()} |{' '}
             <strong>Updated:</strong> {new Date(pkg.updated_at).toLocaleDateString()}
           </p>
-          <div className="flex gap-2 mt-2">
-            <Button onClick={openCreateDialog}>Add Package Option</Button>
-            <Button onClick={handleAiAnalysis} disabled={aiLoading}>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <Button className="flex-1 sm:flex-none" onClick={openCreateDialog}>
+              Add Package Option
+            </Button>
+            <Button className="flex-1 sm:flex-none" onClick={handleAiAnalysis} disabled={aiLoading}>
               {aiLoading ? 'Generating AI...' : 'Toggle AI Analysis'}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Package Analysis & Recommendation */}
+      {/* AI Analysis & Recommendation */}
       {pkg.analysis && pkg.recommendation && (
         <Card className="p-4 shadow-lg">
           <CardHeader>
@@ -247,33 +259,33 @@ export default function PackageDetails() {
           </CardHeader>
           <CardContent>
             <p className="font-semibold">Analysis:</p>
-            <p className="text-muted-foreground mb-2">{pkg.analysis}</p>
+            <p className="text-sm sm:text-base text-muted-foreground mb-2">{pkg.analysis}</p>
             <p className="font-semibold">Recommendation:</p>
-            <p className="text-muted-foreground">{pkg.recommendation}</p>
+            <p className="text-sm sm:text-base text-muted-foreground">{pkg.recommendation}</p>
           </CardContent>
         </Card>
       )}
 
       {/* Package Options */}
       <div className="space-y-6">
-        <h2 className="text-3xl font-bold">Package Options</h2>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Package Options</h2>
         {pkg.options.length > 0 ? (
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {pkg.options.map((opt) => (
-              <Card key={opt.id} className="overflow-hidden shadow-sm p-4">
+              <Card key={opt.id} className="overflow-hidden shadow-sm p-4 flex flex-col">
                 {opt.picture_url && (
-                  <div className="relative h-48 w-full">
+                  <div className="relative h-40 sm:h-48 w-full mb-2 rounded">
                     <Image
                       src={`${api2.defaults.baseURL}${opt.picture_url}`}
                       alt={opt.name}
                       fill
-                      className="object-cover"
+                      className="object-cover rounded"
                     />
                   </div>
                 )}
                 <CardHeader>
-                  <CardTitle>{opt.name}</CardTitle>
-                  <CardDescription>{opt.description}</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">{opt.name}</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">{opt.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-lg font-bold">₱{Number(opt.price).toLocaleString()}</p>
@@ -281,33 +293,36 @@ export default function PackageDetails() {
                     <>
                       <Separator className="my-2" />
                       <p className="text-sm font-semibold">Analysis:</p>
-                      <p className="text-muted-foreground">{opt.analysis}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{opt.analysis}</p>
                     </>
                   )}
                   {opt.recommendation && (
                     <>
                       <Separator className="my-2" />
                       <p className="text-sm font-semibold">Recommendation:</p>
-                      <p className="text-muted-foreground">{opt.recommendation}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{opt.recommendation}</p>
                     </>
                   )}
                 </CardContent>
-                <CardFooter className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
+                <CardFooter className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <span className="text-xs sm:text-sm text-muted-foreground">
                     Created: {new Date(opt.created_at).toLocaleDateString()} | Updated:{' '}
                     {new Date(opt.updated_at).toLocaleDateString()}
                   </span>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => openEditDialog(opt)}>
+                  <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
+                    <Button size="sm" className="flex-1 sm:flex-none" onClick={() => openEditDialog(opt)}>
                       Edit
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => openDeleteDialog(opt)}>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => openDeleteDialog(opt)}
+                    >
                       Delete
                     </Button>
-                    <Button size="sm" variant="outline">
-                      <Link href={`/admin/dashboard/packages/package-option/${opt.id}`}>
-                        View
-                      </Link>
+                    <Button size="sm" variant="outline" className="flex-1 sm:flex-none">
+                      <Link href={`/admin/dashboard/packages/package-option/${opt.id}`}>View</Link>
                     </Button>
                   </div>
                 </CardFooter>
@@ -315,7 +330,7 @@ export default function PackageDetails() {
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground">No options available for this package.</p>
+          <p className="text-sm sm:text-base text-muted-foreground">No options available for this package.</p>
         )}
       </div>
 
@@ -350,9 +365,11 @@ export default function PackageDetails() {
               }
             />
           </div>
-          <DialogFooter className="flex gap-2">
-            <Button onClick={handleCreate}>Create</Button>
-            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+            <Button onClick={handleCreate} className="flex-1 sm:flex-none">
+              Create
+            </Button>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)} className="flex-1 sm:flex-none">
               Cancel
             </Button>
           </DialogFooter>
@@ -390,9 +407,11 @@ export default function PackageDetails() {
               }
             />
           </div>
-          <DialogFooter className="flex gap-2">
-            <Button onClick={handleUpdate}>Save</Button>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+            <Button onClick={handleUpdate} className="flex-1 sm:flex-none">
+              Save
+            </Button>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="flex-1 sm:flex-none">
               Cancel
             </Button>
           </DialogFooter>
@@ -405,9 +424,12 @@ export default function PackageDetails() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this package option?</AlertDialogTitle>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex gap-2">
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 text-white">
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+            <AlertDialogCancel className="flex-1 sm:flex-none">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="flex-1 sm:flex-none bg-red-600 text-white"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

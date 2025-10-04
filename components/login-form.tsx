@@ -1,39 +1,29 @@
+import { Eye, EyeOff, Loader2 } from "lucide-react"; // add Eye icons
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // <--- toggle state
   const router = useRouter();
 
   const attemptAdminLogin = async (credentials: { email: string; password: string }) => {
     try {
-      console.log("Attempting admin login...");
       const res = await api.post("/api/admin-login", credentials);
       login(res.data.admin_info, res.data.token);
       router.push("/admin/dashboard");
-      console.log("Admin login successful");
     } catch (err: any) {
-      console.error("Admin login failed", err);
-
       if (err.response?.status === 401) {
         setError(err.response.data.message);
       } else {
@@ -49,7 +39,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       if (data.token) {
         login(data.user_info, data.token);
         router.push("/user/dashboard");
-        console.log("User login successful");
       }
     },
     onError: (err: any) => {
@@ -57,17 +46,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       const message = err.response?.data?.message;
 
       if (status === 401) {
-        console.warn("User login failed, attempting admin login...");
         attemptAdminLogin({ email, password });
       } else if (status === 403) {
         api.post("/api/send-otp", { email })
           .then((otpRes) => {
-            console.log("OTP sent:", otpRes.data);
             localStorage.setItem("email", email);
             router.push("/auth/verify-otp");
           })
-          .catch((otpErr) => {
-            console.error("Failed to send OTP", otpErr);
+          .catch(() => {
             setError("Failed to send OTP. Please try again later.");
           });
       } else {
@@ -103,27 +89,35 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 disabled={loginMutation.isPending}
               />
             </div>
-            <div className="grid gap-3">
+
+            <div className="grid gap-3 relative">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"} // <--- toggle type
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loginMutation.isPending}
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-7 p-0 h-8 w-8"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loginMutation.isPending}
-            >
+
+            <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
               {loginMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
+
             {error && (
               <div className="text-red-500 text-center text-sm mt-2">{error}</div>
             )}
@@ -133,4 +127,3 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     </div>
   );
 }
-

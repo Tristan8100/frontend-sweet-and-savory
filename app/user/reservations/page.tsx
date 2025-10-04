@@ -63,6 +63,7 @@ export default function ReservationsPage() {
           : `/api/my-reservations-status?status=${status}`;
       const res = await api2.get(url);
       setReservations(res.data.data || []);
+      console.log(res.data.data);
     } catch (err) {
       console.error("Failed to fetch reservations:", err);
     } finally {
@@ -253,7 +254,7 @@ export default function ReservationsPage() {
                       )}
 
                       <Button size="sm" variant="outline" className="mt-2 w-full">
-                        <Link href={`/user/package-option/${reservation.package_option.package.id}`}>
+                        <Link href={`/user/package-option/${reservation.package_option.id}`}>
                           View Package
                         </Link>
                       </Button>
