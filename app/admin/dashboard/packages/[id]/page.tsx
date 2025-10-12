@@ -225,7 +225,7 @@ export default function PackageDetails() {
         {pkg.picture_url && (
           <div className="w-full md:w-1/3 rounded-lg overflow-hidden shadow-lg">
             <Image
-              src={`${api2.defaults.baseURL}${pkg.picture_url}`}
+              src={`${pkg.picture_url}`}
               alt={pkg.name}
               width={500}
               height={300}
@@ -276,7 +276,7 @@ export default function PackageDetails() {
                 {opt.picture_url && (
                   <div className="relative h-40 sm:h-48 w-full mb-2 rounded">
                     <Image
-                      src={`${api2.defaults.baseURL}${opt.picture_url}`}
+                      src={`${opt.picture_url}`}
                       alt={opt.name}
                       fill
                       className="object-cover rounded"

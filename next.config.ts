@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
         port: apiUrl.port || undefined, // must be string | undefined
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**", // allow all paths under Cloudinary
+      },
     ],
   },
 };

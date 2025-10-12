@@ -64,7 +64,7 @@ export default function PackagePage() {
         <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
           {pkg.picture_url && (
             <Image
-              src={`${api2.defaults.baseURL}${pkg.picture_url}`}
+              src={`${pkg.picture_url}`}
               alt={pkg.name}
               fill
               sizes="100vw"

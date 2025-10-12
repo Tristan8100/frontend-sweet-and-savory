@@ -111,7 +111,7 @@ export default function PackageOptionPage() {
           {option.picture_url && (
             <div className="relative h-64:h-full w-full">
               <Image
-                src={`${api2.defaults.baseURL}${option.picture_url}`}
+                src={`${option.picture_url}`}
                 alt={option.name}
                 layout="fill"
                 objectFit="cover"

@@ -44,30 +44,30 @@ export default function CateringLandingPage() {
       <Packages />
 
       <section className="py-20 bg-background">
-  <div className="container mx-auto px-4 text-center md:text-left">
-    <h2 className="text-3xl md:text-4xl font-bold mb-6">About Us</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-      <div>
-        <p className="text-lg text-muted-foreground mb-4">
-          At Sweet and Savory, we are passionate about creating unforgettable experiences through exquisite food and exceptional service. 
-          With years of experience in catering for events of all sizes, we ensure every detail is taken care of, so you can enjoy your special occasion stress-free.
-        </p>
-        <p className="text-lg text-muted-foreground">
-          Our team of professional chefs and event specialists work closely with you to tailor menus and services to match your vision, ensuring that every event is not just catered, but celebrated.
-        </p>
-      </div>
-      <div>
-        <Image
-          src="/images/sv2.jpg"
-          alt="About Delicious Catering"
-          width={400}      // Set desired width
-          height={400}     // Set same height to make it square
-          className="rounded-lg object-cover shadow-lg"
-        />
-      </div>
-    </div>
-  </div>
-</section>
+        <div className="container mx-auto px-4 text-center md:text-left">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">About Us</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-lg text-muted-foreground mb-4">
+                At Sweet and Savory, we are passionate about creating unforgettable experiences through exquisite food and exceptional service. 
+                With years of experience in catering for events of all sizes, we ensure every detail is taken care of, so you can enjoy your special occasion stress-free.
+              </p>
+              <p className="text-lg text-muted-foreground">
+                Our team of professional chefs and event specialists work closely with you to tailor menus and services to match your vision, ensuring that every event is not just catered, but celebrated.
+              </p>
+            </div>
+            <div>
+              <Image
+                src="/images/sv2.jpg"
+                alt="About Delicious Catering"
+                width={400}      // Set desired width
+                height={400}     // Set same height to make it square
+                className="rounded-lg object-cover shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-primary text-primary-foreground">

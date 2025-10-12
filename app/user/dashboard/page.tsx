@@ -144,9 +144,11 @@ export default function DashboardPage() {
             {packages.map((pkg) => (
               <Card key={pkg.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video overflow-hidden">
-                  <img
-                    src={`${api2.defaults.baseURL}${pkg.picture_url}`}
+                  <Image
+                    src={`${pkg.picture_url}`}
                     alt={pkg.name}
+                    width={800}
+                    height={450}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>

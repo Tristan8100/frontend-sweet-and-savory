@@ -53,7 +53,7 @@ export default function Packages() {
               <Card key={pkg.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={`${api2.defaults.baseURL}${pkg.picture_url}`}
+                    src={`${pkg.picture_url}`}
                     alt={pkg.name}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />

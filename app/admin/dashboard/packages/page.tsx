@@ -57,7 +57,7 @@ export default function AdminPackages() {
         })
 
         if (res.data.success) {
-          onUpdated(res.data.data)
+          fetchPackages()
           setOpen(false)
         }
       } catch (err) {
@@ -137,7 +137,7 @@ export default function AdminPackages() {
           <Card key={pkg.id} className="overflow-hidden shadow hover:shadow-lg transition-shadow bg-white rounded-lg flex flex-col">
             <div className="aspect-video w-full relative overflow-hidden">
               <Image
-                src={`${api2.defaults.baseURL}${pkg.picture_url}`}
+                src={`${pkg.picture_url}`}
                 alt={pkg.name}
                 fill
                 className="object-cover transition-transform hover:scale-105"

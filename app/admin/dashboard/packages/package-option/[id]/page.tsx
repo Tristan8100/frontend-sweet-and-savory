@@ -108,7 +108,7 @@ export default function AdminPackageOptionPage() {
         {option.picture_url && (
           <div className="w-full h-64 md:w-1/3 overflow-hidden rounded-lg shadow-lg">
             <Image
-              src={`${api2.defaults.baseURL}${option.picture_url}`}
+              src={`${option.picture_url}`}
               alt={option.name}
               width={500}
               height={300}
