@@ -37,8 +37,9 @@ export default function ReservationsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
-  const [statusUpdating, setStatusUpdating] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [page, setPage] = useState<number>(1);
+  const [pagination, setPagination] = useState<{current_page: number, last_page: number}>({current_page: 1, last_page: 1});
 
   // Debounce search
   useEffect(() => {
@@ -46,12 +47,19 @@ export default function ReservationsPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Fetch reservations
+  // Fetch reservations with backend filtering & pagination
   useEffect(() => {
     const fetchReservations = async () => {
       setLoading(true);
       try {
-        const res = await api2.get("/api/reservations-status", { params: { search: debouncedSearch } });
+        const params: any = {
+          page,
+          search: debouncedSearch
+        };
+        if (statusFilter !== "all") params.status = statusFilter;
+
+        const res = await api2.get("/api/reservations-status", { params });
+
         if (res.data.success) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
@@ -65,28 +73,27 @@ export default function ReservationsPage() {
               const diffInDays = Math.ceil(
                 (reservationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
               );
-              if (diffInDays === 1) {
-                indicator = "soon";
-              } else if (diffInDays < 0) {
-                indicator = "late";
-              }
+              if (diffInDays === 1) indicator = "soon";
+              else if (diffInDays < 0) indicator = "late";
             }
 
             return {
               id: r.id,
-              user: r.user || r.user_name || "Unknown",
-              package: r.package || r.packageOption?.package?.name || "N/A",
-              package_option: r.package_option || r.packageOption?.name || "N/A",
-              package_option_id: r.package_option?.id || 0,
+              user: r.user || "Unknown",
+              package: r.package || "N/A",
+              package_option: r.package_option || "N/A",
+              package_option_id: r.package_option_id || 0,
               status: r.status,
               indicator,
               date: reservationDate.toLocaleDateString(),
-              amount: r.amount || r.price_purchased || 0,
+              amount: r.amount || 0,
               review_text: r.review_text,
-              rating: r.rating,
+              rating: r.rating
             };
           });
+
           setReservations(mapped);
+          setPagination({current_page: res.data.pagination.current_page, last_page: res.data.pagination.last_page});
         }
       } catch (err) {
         console.error(err);
@@ -96,7 +103,7 @@ export default function ReservationsPage() {
     };
 
     fetchReservations();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, statusFilter, page]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -108,74 +115,9 @@ export default function ReservationsPage() {
     }
   };
 
-  const handleView = async (id: number) => {
-    try {
-      const res = await api2.get(`/api/reservations/${id}`);
-      if (res.data.success) {
-        const r = res.data.data;
-        const reservationDate = new Date(r.reservation_datetime || r.created_at);
-        reservationDate.setHours(0, 0, 0, 0);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        let indicator: "soon" | "late" | null = null;
-        if (r.status === "pending" || r.status === "confirmed") {
-          const diffInDays = Math.ceil(
-            (reservationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-          );
-          if (diffInDays === 1) {
-            indicator = "soon";
-          } else if (diffInDays < 0) {
-            indicator = "late";
-          }
-        }
-
-        setSelectedReservation({
-          id: r.id,
-          user: r.user?.name || "Unknown",
-          package: r.package_option?.package?.name || "N/A",
-          package_option: r.package_option?.name || "N/A",
-          package_option_id: r.package_option?.id || 0,
-          status: r.status,
-          indicator,
-          date: reservationDate.toLocaleDateString(),
-          amount: r.price_purchased || 0,
-          review_text: r.review_text,
-          rating: r.rating,
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleStatusUpdate = async (newStatus: string) => {
-    if (!selectedReservation) return;
-    setStatusUpdating(true);
-    try {
-      const res = await api2.put(`/api/reservations-status/${selectedReservation.id}`, { status: newStatus });
-      if (res.data.success) {
-        setReservations(prev =>
-          prev.map(r => (r.id === selectedReservation.id ? { ...r, status: newStatus } : r))
-        );
-        setSelectedReservation(prev => prev ? { ...prev, status: newStatus } : prev);
-      }
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to update status");
-    } finally {
-      setStatusUpdating(false);
-    }
-  };
-
-  const filteredReservations = reservations.filter(r =>
-    (r.user.toLowerCase().includes(search.toLowerCase()) ||
-      r.package.toLowerCase().includes(search.toLowerCase()) ||
-      r.package_option.toLowerCase().includes(search.toLowerCase())) &&
-    (statusFilter === "all" || r.status === statusFilter)
-  );
-
   return (
     <div className="space-y-6">
+      {/* Filters */}
       <div className="flex items-center space-x-2">
         <Input
           placeholder="Search reservations..."
@@ -183,7 +125,7 @@ export default function ReservationsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(val) => { setPage(1); setStatusFilter(val); }}>
           <SelectTrigger className="w-32">
             <SelectValue placeholder="Filter status" />
           </SelectTrigger>
@@ -195,9 +137,9 @@ export default function ReservationsPage() {
             <SelectItem value="cancelled">Cancelled</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
       </div>
 
+      {/* Table */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -217,20 +159,16 @@ export default function ReservationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredReservations.map(r => (
+                  {reservations.map(r => (
                     <tr key={r.id} className="border-b border-border">
                       <td className="p-4">{r.user}</td>
                       <td className="p-4">{r.package}</td>
                       <td className="p-4">{r.package_option}</td>
                       <td className="p-4">{r.date}</td>
-                      <td className="p-4 flex items-center gap-2">
+                      <td className="p-4">
                         <Badge className={getStatusColor(r.status)}>{r.status}</Badge>
-                        {r.indicator === "soon" && (
-                          <Badge className="bg-yellow-500 text-black">Soon</Badge>
-                        )}
-                        {r.indicator === "late" && (
-                          <Badge className="bg-red-500 text-white">Late</Badge>
-                        )}
+                        {r.indicator === "soon" && <Badge className="bg-yellow-500 text-black ml-1">Soon</Badge>}
+                        {r.indicator === "late" && <Badge className="bg-red-500 text-white ml-1">Late</Badge>}
                       </td>
                       <td className="p-4">₱{r.amount}</td>
                       <td className="p-4">
@@ -239,7 +177,7 @@ export default function ReservationsPage() {
                             <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleView(r.id)}>
+                            <DropdownMenuItem onClick={() => setSelectedReservation(r)}>
                               <Eye className="mr-2 h-4 w-4" /> View Details
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -247,7 +185,7 @@ export default function ReservationsPage() {
                       </td>
                     </tr>
                   ))}
-                  {filteredReservations.length === 0 && (
+                  {reservations.length === 0 && (
                     <tr>
                       <td colSpan={7} className="text-center p-4 text-muted-foreground">No reservations found.</td>
                     </tr>
@@ -259,6 +197,14 @@ export default function ReservationsPage() {
         </CardContent>
       </Card>
 
+      {/* Pagination */}
+      <div className="flex justify-center space-x-2">
+        <Button disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
+        <span className="px-2 py-1 bg-muted rounded">{page} / {pagination.last_page}</span>
+        <Button disabled={page >= pagination.last_page} onClick={() => setPage(page + 1)}>Next</Button>
+      </div>
+
+      {/* Details Dialog */}
       {selectedReservation && (
         <Dialog open={!!selectedReservation} onOpenChange={(open) => !open && setSelectedReservation(null)}>
           <DialogContent>
@@ -271,47 +217,14 @@ export default function ReservationsPage() {
               <p><strong>Option:</strong> {selectedReservation.package_option}</p>
               <p><strong>Date:</strong> {selectedReservation.date}</p>
               <p><strong>Status:</strong> 
-                <span className="flex items-center gap-2 mt-1">
-                  <Badge className={getStatusColor(selectedReservation.status)}>{selectedReservation.status}</Badge>
-                  {selectedReservation.indicator === "soon" && (
-                    <Badge className="bg-yellow-500 text-black">Soon</Badge>
-                  )}
-                  {selectedReservation.indicator === "late" && (
-                    <Badge className="bg-red-500 text-white">Late</Badge>
-                  )}
-                </span>
+                <Badge className={getStatusColor(selectedReservation.status)}>{selectedReservation.status}</Badge>
               </p>
               <p><strong>Amount:</strong> ₱{selectedReservation.amount}</p>
-              {selectedReservation.status === 'completed' && selectedReservation.rating && (
-                <p><strong>Rating:</strong> {selectedReservation.rating} / 5</p>
-              )}
               <Button variant="outline" asChild>
                 <Link href={`/admin/dashboard/packages/package-option/${selectedReservation.package_option_id}`}>
                   View Package
                 </Link>
               </Button>
-              <div className="mt-4">
-                <Select
-                  value={selectedReservation.status}
-                  onValueChange={handleStatusUpdate}
-                  disabled={statusUpdating}   // disable now
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Change status" />
-                    {statusUpdating && (
-                      <span className="ml-2 text-sm text-muted-foreground animate-pulse">
-                        Updating...
-                      </span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </DialogContent>
         </Dialog>
