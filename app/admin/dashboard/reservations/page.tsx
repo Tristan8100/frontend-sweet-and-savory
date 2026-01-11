@@ -12,8 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Filter, Eye, MoreHorizontal } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Eye, MoreHorizontal } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
 
@@ -47,7 +46,7 @@ export default function ReservationsPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Fetch reservations with backend filtering & pagination
+  // Fetch reservations
   useEffect(() => {
     const fetchReservations = async () => {
       setLoading(true);
@@ -115,6 +114,31 @@ export default function ReservationsPage() {
     }
   };
 
+  const updateStatus = async (reservationId: number, newStatus: string, oldStatus: string) => {
+    // update
+    setReservations((prev) =>
+      prev.map((res) => (res.id === reservationId ? { ...res, status: newStatus } : res))
+    );
+
+    try {
+      const res = await api2.put(`/api/reservations-status/${reservationId}`, { status: newStatus });
+
+      if (!res.data.success) {
+        // Rollback
+        setReservations((prev) =>
+          prev.map((res) => (res.id === reservationId ? { ...res, status: oldStatus } : res))
+        );
+        alert(res.data.message || "Failed to update status");
+      }
+    } catch (err: any) {
+      // Rollback again
+      setReservations((prev) =>
+        prev.map((res) => (res.id === reservationId ? { ...res, status: oldStatus } : res))
+      );
+      alert(err.response?.data?.message || "Something went wrong");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -166,9 +190,28 @@ export default function ReservationsPage() {
                       <td className="p-4">{r.package_option}</td>
                       <td className="p-4">{r.date}</td>
                       <td className="p-4">
-                        <Badge className={getStatusColor(r.status)}>{r.status}</Badge>
-                        {r.indicator === "soon" && <Badge className="bg-yellow-500 text-black ml-1">Soon</Badge>}
-                        {r.indicator === "late" && <Badge className="bg-red-500 text-white ml-1">Late</Badge>}
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(r.status)}>{r.status}</Badge>
+                          
+                          <Select
+                            value={r.status}
+                            onValueChange={(newStatus) => updateStatus(r.id, newStatus, r.status)}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="accepted">Accepted</SelectItem>
+                              <SelectItem value="confirmed">Confirmed</SelectItem>
+                              <SelectItem value="completed">Completed</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          {r.indicator === "soon" && <Badge className="bg-yellow-500 text-black">Soon</Badge>}
+                          {r.indicator === "late" && <Badge className="bg-red-500 text-white">Late</Badge>}
+                        </div>
                       </td>
                       <td className="p-4">₱{r.amount}</td>
                       <td className="p-4">
@@ -204,30 +247,27 @@ export default function ReservationsPage() {
         <Button disabled={page >= pagination.last_page} onClick={() => setPage(page + 1)}>Next</Button>
       </div>
 
-      {/* Details Dialog */}
+      {/* Details Panel */}
       {selectedReservation && (
-        <Dialog open={!!selectedReservation} onOpenChange={(open) => !open && setSelectedReservation(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Reservation Details</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-2">
-              <p><strong>Customer:</strong> {selectedReservation.user}</p>
-              <p><strong>Package:</strong> {selectedReservation.package}</p>
-              <p><strong>Option:</strong> {selectedReservation.package_option}</p>
-              <p><strong>Date:</strong> {selectedReservation.date}</p>
-              <p><strong>Status:</strong> 
-                <Badge className={getStatusColor(selectedReservation.status)}>{selectedReservation.status}</Badge>
-              </p>
-              <p><strong>Amount:</strong> ₱{selectedReservation.amount}</p>
-              <Button variant="outline" asChild>
-                <Link href={`/admin/dashboard/packages/package-option/${selectedReservation.package_option_id}`}>
-                  View Package
-                </Link>
-              </Button>
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setSelectedReservation(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-semibold">Reservation Details</h2>
+              <button onClick={() => setSelectedReservation(null)} className="text-gray-500 hover:text-gray-700">✕</button>
             </div>
-          </DialogContent>
-        </Dialog>
+            <div className="space-y-3">
+              <div><strong>Customer:</strong> {selectedReservation.user}</div>
+              <div><strong>Package:</strong> {selectedReservation.package}</div>
+              <div><strong>Option:</strong> {selectedReservation.package_option}</div>
+              <div><strong>Date:</strong> {selectedReservation.date}</div>
+              <div><strong>Status:</strong> <Badge className={getStatusColor(selectedReservation.status)}>{selectedReservation.status}</Badge></div>
+              <div><strong>Amount:</strong> ₱{selectedReservation.amount}</div>
+              <Link href={`/admin/dashboard/packages/package-option/${selectedReservation.package_option_id}`}>
+                <Button variant="outline" className="w-full mt-4">View Package</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
