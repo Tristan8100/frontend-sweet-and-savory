@@ -2,7 +2,14 @@ import type { NextConfig } from "next";
 
 const apiUrl = new URL(process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000");
 
-const nextConfig: NextConfig = {
+type ExtendedNextConfig = NextConfig & {
+  eslint?: {
+    ignoreDuringBuilds?: boolean;
+  };
+};
+
+const nextConfig: ExtendedNextConfig = {
+  /* config options here */
   reactStrictMode: false,
   eslint: {
     ignoreDuringBuilds: true,
